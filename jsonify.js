@@ -20,7 +20,7 @@ function sumTotalForMonth(processedDataSets) {
 }
 
 // Read the JSON file containing the processed data sets
-const filePath = 'processedDataSets.json';
+const filePath = 'JsonOutput/processedDataSets.json';
 const rawData = fs.readFileSync(filePath);
 const processedDataSets = JSON.parse(rawData);
 
