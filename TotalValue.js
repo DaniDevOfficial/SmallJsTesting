@@ -91,7 +91,6 @@ const dataSet3 = {
     historicalData: [
         { "date": "2023-02-01", "price": 7000 },
         { "date": "2023-02-20", "price": 7500 },
-        // ... more data points
     ]
 };
 
