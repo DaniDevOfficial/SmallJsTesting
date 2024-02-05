@@ -1,4 +1,3 @@
-const processedDataSets = [];
 const fs = require('fs');
 
 
@@ -13,12 +12,11 @@ function processMultipleHistoricalData(dataSets) {
             name: dataSet.name,
             historicalData: []
         };
-
+        dataSet.historicalData.sort((a, b) => new Date(a.date) - new Date(b.date));
         const firstDate = new Date(dataSet.historicalData[0].date);
-        const daysInMonth = Math.floor((today - firstDate) / (24 * 60 * 60 * 1000)); // Calculate the number of days between the first date and today
-        console.log(daysInMonth)
+        const daysTillNow = Math.floor((today - firstDate) / (24 * 60 * 60 * 1000)); // Calculate the number of days between the first date and today
         let lastKnownPrices = 0;
-        for (let day = 0; day < daysInMonth; day++) {
+        for (let day = 0; day < daysTillNow; day++) {
             const currentDate = new Date(firstDate);
             currentDate.setDate(firstDate.getDate() + day);
 
@@ -50,6 +48,44 @@ function processMultipleHistoricalData(dataSets) {
     return processedDataSets;
 }
 
+
+function processMultibleBuyDate(dataSets) {
+    const today = new Date();
+    const startTime = new Date(); // Record start time
+    const buyAndSoldData = [];
+    dataSets.forEach((dataSet, index) => {
+        const processedDataSet = {
+            name: dataSet.name,
+            historicalData: []
+        };
+        const firstDate = new Date(dataSet.buyDate);
+        const daysTillNow = Math.floor((today - firstDate) / (24 * 60 * 60 * 1000)); // Calculate the number of days between the first date and today
+        for (let day = 0; day < daysTillNow; day++) {
+            const currentDate = new Date(firstDate);
+            currentDate.setDate(firstDate.getDate() + day);
+
+            if (dataSet.soldDate && new Date(dataSet.soldDate) <= currentDate) {
+                price = 0;
+            } else {
+                price = dataSet.buyPrice;
+            }
+
+
+            const formattedDate = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getDate().toString().padStart(2, '0')}`;
+
+            const processedDataPoint = {
+                date: formattedDate,
+                price: price
+            };
+            processedDataSet.historicalData.push(processedDataPoint);
+        }
+        buyAndSoldData.push(processedDataSet);
+    });
+    // sort by date
+    buyAndSoldData.sort((a, b) => new Date(a.historicalData[0].date) - new Date(b.historicalData[0].date));
+    return buyAndSoldData;
+}
+
 function sumTotalForMonth(processedDataSets) {
     const totalForMonth = {};
 
@@ -65,11 +101,12 @@ function sumTotalForMonth(processedDataSets) {
             totalForMonth[date] += price;
         });
     });
-
     return totalForMonth;
 }
 const dataSet1 = {
     name: "DataSet1",
+    buyPrice: 5000,
+    buyDate: "2023-02-03",
     historicalData: [
         { "date": "2023-02-03", "price": 5000 },
         { "date": "2023-02-12", "price": 5500 },
@@ -79,6 +116,10 @@ const dataSet1 = {
 
 const dataSet2 = {
     name: "DataSet2",
+    buyPrice: 6000,
+    buyDate: "2023-02-05",
+    soldPrice: 6500,
+    soldDate: "2023-02-15",
     historicalData: [
         { "date": "2023-02-05", "price": 6000 },
         { "date": "2023-02-15", "price": 6500 },
@@ -88,8 +129,12 @@ const dataSet2 = {
 
 const dataSet3 = {
     name: "DataSet3",
+    buyPrice: 7000,
+    buyDate: "2023-02-01",
+    soldPrice: 7500,
+    soldDate: "2023-02-20",
     historicalData: [
-        { "date": "2023-02-01", "price": 7000 },
+        { "date": "2023-02-01", "price": 7000, "fortnite": "yes" },
         { "date": "2023-02-20", "price": 7500 },
     ]
 };
@@ -97,13 +142,12 @@ const dataSet3 = {
 const multipleDataSets = [dataSet1, dataSet2, dataSet3];
 
 
-const result = processMultipleHistoricalData(multipleDataSets);
-
-
-const totalForMonth = sumTotalForMonth(result);
+const result =  processMultipleHistoricalData(multipleDataSets);
+const buyAndSoldResult = processMultibleBuyDate(multipleDataSets)
+const totalForAllBuyAndSold = sumTotalForMonth(buyAndSoldResult);
+console.log(JSON.stringify(totalForAllBuyAndSold, null, 2))
+const totalForMonth =  sumTotalForMonth(result);
 const jsonData = JSON.stringify(totalForMonth, null, 2);
-console.log(totalForMonth)
-
 const filePath = 'JsonOutput/processedDataSets.json';
 
 fs.writeFileSync(filePath, jsonData);
