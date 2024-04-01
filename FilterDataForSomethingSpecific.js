@@ -17,7 +17,7 @@ function FilterForLastXAmountOfDays(processedDataSets, days) {
     filteredData.sort((a, b) => new Date(b.date) - new Date(a.date));
     // end timer
     const endTime = new Date(); 
-    const elapsedTime = endTime - startTime; // Calculate elapsed time in milliseconds
+    const elapsedTime = (today - startTime) / 1000; // Calculate elapsed time in seconds
     console.log(`Filtering took ${elapsedTime} milliseconds`);
     return filteredData;
 }
@@ -27,7 +27,7 @@ const rawData = fs.readFileSync(filePath);
 const processedDataSets = JSON.parse(rawData);
 
 // use the function to filter for a specific amount of days (can be used for last 7 days, last 30 days, etc.)
-const days = 32;
+const days = 100;
 const latestEntries = FilterForLastXAmountOfDays(processedDataSets, days);
 console.log(`Latest entries for the last ${days} days:`, latestEntries);
 

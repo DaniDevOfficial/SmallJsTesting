@@ -1,16 +1,17 @@
 const fs = require('fs');
+const { type } = require('os');
 
 
-
+// Function to process multiple historical data sets and creates historical data for each day between the first date and today for each single data set in the array
 function processMultipleHistoricalData(dataSets) {
     const today = new Date();
-    const startTime = new Date(); // Record start time
     const processedDataSets = [];
 
     dataSets.forEach((dataSet, index) => {
         const processedDataSet = {
-            name: dataSet.name,
+            ...dataSet,
             historicalData: []
+            
         };
         dataSet.historicalData.sort((a, b) => new Date(a.date) - new Date(b.date));
         const firstDate = new Date(dataSet.historicalData[0].date);
@@ -22,7 +23,7 @@ function processMultipleHistoricalData(dataSets) {
 
             const formattedDate = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getDate().toString().padStart(2, '0')}`;
             const price = dataSet.historicalData.find(dataPoint => dataPoint.date === formattedDate)?.price;
-
+            
             const processedDataPoint = {
                 date: formattedDate,
                 price: price !== undefined ? price : lastKnownPrices
@@ -41,17 +42,14 @@ function processMultipleHistoricalData(dataSets) {
 
     processedDataSets.sort((a, b) => new Date(a.historicalData[0].date) - new Date(b.historicalData[0].date)); // Sort processedDataSets by the earliest date in historicalData
 
-    const endTime = new Date(); // Record end time
-    const elapsedTime = endTime - startTime; // Calculate elapsed time in milliseconds
-    console.log(`Processing took ${elapsedTime} milliseconds`);
+
 
     return processedDataSets;
 }
 
-
+// adds up all the prices for each day in the data sets
 function processMultibleBuyDate(dataSets) {
     const today = new Date();
-    const startTime = new Date(); // Record start time
     const buyAndSoldData = [];
     dataSets.forEach((dataSet, index) => {
         const processedDataSet = {
@@ -103,6 +101,7 @@ function sumTotalForMonth(processedDataSets) {
     });
     return totalForMonth;
 }
+
 const dataSet1 = {
     name: "DataSet1",
     buyPrice: 5000,
@@ -110,7 +109,6 @@ const dataSet1 = {
     historicalData: [
         { "date": "2023-02-03", "price": 5000 },
         { "date": "2023-02-12", "price": 5500 },
-        // ... more data points
     ]
 };
 
@@ -121,9 +119,8 @@ const dataSet2 = {
     soldPrice: 6500,
     soldDate: "2023-02-15",
     historicalData: [
-        { "date": "2023-02-05", "price": 6000 },
-        { "date": "2023-02-15", "price": 6500 },
-        // ... more data points
+        { date: "2023-02-05", price: 6000 },
+        { date: "2023-02-15", price: 6500 },
     ]
 };
 
@@ -142,14 +139,13 @@ const dataSet3 = {
 const multipleDataSets = [dataSet1, dataSet2, dataSet3];
 
 
-const result =  processMultipleHistoricalData(multipleDataSets);
+const result = processMultipleHistoricalData(multipleDataSets);
 const buyAndSoldResult = processMultibleBuyDate(multipleDataSets)
 const totalForAllBuyAndSold = sumTotalForMonth(buyAndSoldResult);
-console.log(JSON.stringify(totalForAllBuyAndSold, null, 2))
-const totalForMonth =  sumTotalForMonth(result);
+const totalForMonth = sumTotalForMonth(result);
 const jsonData = JSON.stringify(totalForMonth, null, 2);
 const filePath = 'JsonOutput/processedDataSets.json';
 
 fs.writeFileSync(filePath, jsonData);
 
-console.log(`Data sets processed and saved to ${filePath}`);
+console.log(`Data sets processed and saved to ${filePath}`); 
